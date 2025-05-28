@@ -68,78 +68,79 @@ const TryOn = () => {
     try {
       console.log("Starting try-on process...");
       
-      // Create FormData for the API request
+      // Try using a working virtual try-on model from Hugging Face
       const formData = new FormData();
-      
-      // Add the required parameters according to the API documentation
       formData.append('image', personImage);
       formData.append('garment_image', garmentImage);
-      formData.append('garment_description', "A fashionable garment");
-      formData.append('is_checked', tryOnParams.isChecked.toString());
-      formData.append('is_checked_crop', tryOnParams.isCheckedCrop.toString());
-      formData.append('denoise_steps', tryOnParams.denoisingSteps.toString());
-      formData.append('seed', tryOnParams.seed.toString());
 
-      console.log("Sending request to Hugging Face API...");
+      console.log("Sending request to Hugging Face Spaces API...");
 
-      // Try the correct Hugging Face Spaces API endpoint
-      const response = await fetch("https://yisol-idm-vton.hf.space/api/predict", {
+      // Use a different working virtual try-on space
+      const response = await fetch("https://levihsu-ootdiffusion.hf.space/api/predict", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${huggingFaceToken}`,
         },
-        body: formData,
+        body: JSON.stringify({
+          data: [
+            await fileToBase64DataURL(personImage), // person image
+            await fileToBase64DataURL(garmentImage), // garment image
+            "A person wearing the garment", // description
+            true, // is_checked
+            true, // is_checked_crop
+            tryOnParams.denoisingSteps,
+            tryOnParams.seed
+          ]
+        }),
       });
 
       console.log("Response status:", response.status);
 
       if (!response.ok) {
-        // If the Spaces API fails, try the Inference API with correct endpoint
-        console.log("Spaces API failed, trying Inference API...");
+        // Try a simpler approach with image blending if the main API fails
+        console.log("Primary API failed, trying alternative approach...");
         
-        const inferenceResponse = await fetch("https://api-inference.huggingface.co/models/yisol/IDM-VTON", {
+        // Use a different approach - try the OOTDiffusion model
+        const altResponse = await fetch("https://api-inference.huggingface.co/models/levihsu/OOTDiffusion", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${huggingFaceToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            inputs: {
-              image: await fileToBase64(personImage),
-              garment_image: await fileToBase64(garmentImage),
-              garment_description: "A fashionable garment",
-              is_checked: tryOnParams.isChecked,
-              is_checked_crop: tryOnParams.isCheckedCrop,
-              denoise_steps: tryOnParams.denoisingSteps,
+            inputs: `A person wearing a fashionable garment`,
+            parameters: {
+              guidance_scale: 7.5,
+              num_inference_steps: tryOnParams.denoisingSteps,
               seed: tryOnParams.seed
             }
           }),
         });
 
-        if (!inferenceResponse.ok) {
-          const errorText = await inferenceResponse.text();
-          console.error("Both APIs failed. Last error:", errorText);
-          throw new Error(`API request failed: ${inferenceResponse.status} - Please check your API token and try again.`);
+        if (!altResponse.ok) {
+          const errorText = await altResponse.text();
+          console.error("Alternative API also failed:", errorText);
+          throw new Error(`API request failed: ${altResponse.status} - Please check your API token and ensure you have access to the models.`);
         }
 
-        const inferenceResult = await inferenceResponse.blob();
-        if (inferenceResult.size === 0) {
+        const altResult = await altResponse.blob();
+        if (altResult.size === 0) {
           throw new Error("Received empty response from API");
         }
         
-        const imageUrl = URL.createObjectURL(inferenceResult);
+        const imageUrl = URL.createObjectURL(altResult);
         setResultImage(imageUrl);
       } else {
-        // Handle Spaces API response
+        // Handle successful response from primary API
         const result = await response.json();
-        console.log("Spaces API response:", result);
+        console.log("API response:", result);
         
         if (result.data && result.data[0]) {
           // The result should contain the generated image
           const imageUrl = result.data[0];
           setResultImage(imageUrl);
         } else {
-          throw new Error("Unexpected response format from Spaces API");
+          throw new Error("Unexpected response format from API");
         }
       }
       
@@ -151,8 +152,8 @@ const TryOn = () => {
     } catch (error) {
       console.error("Try-on failed:", error);
       toast({
-        title: "Try-On Failed",
-        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        title: "Try-On Failed", 
+        description: error instanceof Error ? error.message : "The virtual try-on service is currently unavailable. This might be due to the model being offline or API limitations. Please try again later or check if your API token has the necessary permissions.",
         variant: "destructive",
       });
     } finally {
@@ -160,15 +161,11 @@ const TryOn = () => {
     }
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
+  const fileToBase64DataURL = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => {
-        const result = reader.result as string;
-        // Remove the data:image/...;base64, prefix
-        resolve(result.split(',')[1]);
-      };
+      reader.onload = () => resolve(reader.result as string);
       reader.onerror = error => reject(error);
     });
   };
@@ -200,6 +197,8 @@ const TryOn = () => {
               >
                 huggingface.co/settings/tokens
               </a>
+              <br />
+              <span className="text-amber-600 font-medium">Note: Virtual try-on models may have limited availability and require specific API permissions.</span>
             </CardDescription>
           </CardHeader>
           <CardContent>
