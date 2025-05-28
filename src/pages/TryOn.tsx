@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ImageUpload } from '@/components/TryOn/ImageUpload';
 import { TryOnResult } from '@/components/TryOn/TryOnResult';
 import { TryOnControls } from '@/components/TryOn/TryOnControls';
-import { Loader2, Shirt, User } from 'lucide-react';
+import { Loader2, Shirt, User, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export interface TryOnParams {
   backgroundFile: File | null;
@@ -22,6 +24,7 @@ const TryOn = () => {
   const [garmentImage, setGarmentImage] = useState<File | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [huggingFaceToken, setHuggingFaceToken] = useState<string>('');
   const [tryOnParams, setTryOnParams] = useState<TryOnParams>({
     backgroundFile: null,
     garmentFile: null,
@@ -51,6 +54,15 @@ const TryOn = () => {
       return;
     }
 
+    if (!huggingFaceToken.trim()) {
+      toast({
+        title: "Missing API Token",
+        description: "Please enter your Hugging Face API token to use the virtual try-on feature.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -60,78 +72,82 @@ const TryOn = () => {
       const formData = new FormData();
       
       // Add the required parameters according to the API documentation
-      const requestData = {
-        background: personImage,
-        garment: garmentImage,
-        garment_des: "A fashionable garment", // Required string parameter
-        is_checked: tryOnParams.isChecked,
-        is_checked_crop: tryOnParams.isCheckedCrop,
-        denoise_steps: tryOnParams.denoisingSteps,
-        seed: tryOnParams.seed
-      };
-
-      // Append files and parameters to FormData
-      formData.append('background', requestData.background);
-      formData.append('garment', requestData.garment);
-      formData.append('garment_des', requestData.garment_des);
-      formData.append('is_checked', requestData.is_checked.toString());
-      formData.append('is_checked_crop', requestData.is_checked_crop.toString());
-      formData.append('denoise_steps', requestData.denoise_steps.toString());
-      formData.append('seed', requestData.seed.toString());
+      formData.append('image', personImage);
+      formData.append('garment_image', garmentImage);
+      formData.append('garment_description', "A fashionable garment");
+      formData.append('is_checked', tryOnParams.isChecked.toString());
+      formData.append('is_checked_crop', tryOnParams.isCheckedCrop.toString());
+      formData.append('denoise_steps', tryOnParams.denoisingSteps.toString());
+      formData.append('seed', tryOnParams.seed.toString());
 
       console.log("Sending request to Hugging Face API...");
 
-      const response = await fetch("https://api-inference.huggingface.co/models/yisol/IDM-VTON", {
+      // Try the correct Hugging Face Spaces API endpoint
+      const response = await fetch("https://yisol-idm-vton.hf.space/api/predict", {
         method: "POST",
+        headers: {
+          "Authorization": `Bearer ${huggingFaceToken}`,
+        },
         body: formData,
       });
 
       console.log("Response status:", response.status);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API Error:", errorText);
-        throw new Error(`API request failed: ${response.status} - ${errorText}`);
-      }
+        // If the Spaces API fails, try the Inference API with correct endpoint
+        console.log("Spaces API failed, trying Inference API...");
+        
+        const inferenceResponse = await fetch("https://api-inference.huggingface.co/models/yisol/IDM-VTON", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${huggingFaceToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            inputs: {
+              image: await fileToBase64(personImage),
+              garment_image: await fileToBase64(garmentImage),
+              garment_description: "A fashionable garment",
+              is_checked: tryOnParams.isChecked,
+              is_checked_crop: tryOnParams.isCheckedCrop,
+              denoise_steps: tryOnParams.denoisingSteps,
+              seed: tryOnParams.seed
+            }
+          }),
+        });
 
-      const contentType = response.headers.get('content-type');
-      console.log("Response content type:", contentType);
+        if (!inferenceResponse.ok) {
+          const errorText = await inferenceResponse.text();
+          console.error("Both APIs failed. Last error:", errorText);
+          throw new Error(`API request failed: ${inferenceResponse.status} - Please check your API token and try again.`);
+        }
 
-      if (contentType && contentType.includes('application/json')) {
-        // If response is JSON, it might be an error or status message
-        const jsonResponse = await response.json();
-        console.log("JSON Response:", jsonResponse);
-        
-        if (jsonResponse.error) {
-          throw new Error(jsonResponse.error);
-        }
-        
-        // Handle case where model might be loading
-        if (jsonResponse.estimated_time) {
-          toast({
-            title: "Model Loading",
-            description: `The model is loading. Estimated time: ${jsonResponse.estimated_time} seconds. Please try again in a moment.`,
-            variant: "destructive",
-          });
-          return;
-        }
-      } else {
-        // Response should be an image
-        const blob = await response.blob();
-        console.log("Received image blob, size:", blob.size);
-        
-        if (blob.size === 0) {
+        const inferenceResult = await inferenceResponse.blob();
+        if (inferenceResult.size === 0) {
           throw new Error("Received empty response from API");
         }
         
-        const imageUrl = URL.createObjectURL(blob);
+        const imageUrl = URL.createObjectURL(inferenceResult);
         setResultImage(imageUrl);
+      } else {
+        // Handle Spaces API response
+        const result = await response.json();
+        console.log("Spaces API response:", result);
         
-        toast({
-          title: "Try-On Complete!",
-          description: "Your virtual try-on result is ready.",
-        });
+        if (result.data && result.data[0]) {
+          // The result should contain the generated image
+          const imageUrl = result.data[0];
+          setResultImage(imageUrl);
+        } else {
+          throw new Error("Unexpected response format from Spaces API");
+        }
       }
+      
+      toast({
+        title: "Try-On Complete!",
+        description: "Your virtual try-on result is ready.",
+      });
+
     } catch (error) {
       console.error("Try-on failed:", error);
       toast({
@@ -148,7 +164,11 @@ const TryOn = () => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove the data:image/...;base64, prefix
+        resolve(result.split(',')[1]);
+      };
       reader.onerror = error => reject(error);
     });
   };
@@ -162,6 +182,39 @@ const TryOn = () => {
             Upload your photo and a garment to see how it looks on you!
           </p>
         </div>
+
+        {/* API Token Input */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Hugging Face API Configuration
+            </CardTitle>
+            <CardDescription>
+              Enter your Hugging Face API token to use the virtual try-on feature. You can get one from{' '}
+              <a 
+                href="https://huggingface.co/settings/tokens" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                huggingface.co/settings/tokens
+              </a>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="hf-token">Hugging Face API Token</Label>
+              <Input
+                id="hf-token"
+                type="password"
+                value={huggingFaceToken}
+                onChange={(e) => setHuggingFaceToken(e.target.value)}
+                placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Person Image Upload */}
@@ -221,7 +274,7 @@ const TryOn = () => {
               />
               <Button
                 onClick={performTryOn}
-                disabled={!personImage || !garmentImage || isLoading}
+                disabled={!personImage || !garmentImage || !huggingFaceToken.trim() || isLoading}
                 className="w-full mt-4"
               >
                 {isLoading ? (
