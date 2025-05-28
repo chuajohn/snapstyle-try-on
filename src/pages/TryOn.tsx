@@ -1,14 +1,8 @@
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ImageUpload } from '@/components/TryOn/ImageUpload';
+import { ApiConfiguration } from '@/components/TryOn/ApiConfiguration';
+import { TryOnUploadSection } from '@/components/TryOn/TryOnUploadSection';
 import { TryOnResult } from '@/components/TryOn/TryOnResult';
-import { TryOnControls } from '@/components/TryOn/TryOnControls';
-import { Loader2, Shirt, User, AlertCircle } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useTryOn } from '@/hooks/useTryOn';
 
 export interface TryOnParams {
   backgroundFile: File | null;
@@ -20,154 +14,28 @@ export interface TryOnParams {
 }
 
 const TryOn = () => {
-  const [personImage, setPersonImage] = useState<File | null>(null);
-  const [garmentImage, setGarmentImage] = useState<File | null>(null);
-  const [resultImage, setResultImage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [huggingFaceToken, setHuggingFaceToken] = useState<string>('');
-  const [tryOnParams, setTryOnParams] = useState<TryOnParams>({
-    backgroundFile: null,
-    garmentFile: null,
-    denoisingSteps: 30,
-    seed: 42,
-    isChecked: true,
-    isCheckedCrop: false,
-  });
+  const {
+    personImage,
+    garmentImage,
+    resultImage,
+    isLoading,
+    huggingFaceToken,
+    tryOnParams,
+    setHuggingFaceToken,
+    setTryOnParams,
+    handlePersonImageUpload,
+    handleGarmentImageUpload,
+    performTryOn,
+    resetTryOn,
+  } = useTryOn();
 
-  const handlePersonImageUpload = (file: File) => {
-    setPersonImage(file);
-    setTryOnParams(prev => ({ ...prev, backgroundFile: file }));
-  };
-
-  const handleGarmentImageUpload = (file: File) => {
-    setGarmentImage(file);
-    setTryOnParams(prev => ({ ...prev, garmentFile: file }));
-  };
-
-  const performTryOn = async () => {
-    if (!personImage || !garmentImage) {
-      toast({
-        title: "Missing Images",
-        description: "Please upload both a person image and a garment image.",
-        variant: "destructive",
-      });
-      return;
+  const handleDownload = () => {
+    if (resultImage) {
+      const link = document.createElement('a');
+      link.href = resultImage;
+      link.download = 'virtual-tryon-result.png';
+      link.click();
     }
-
-    if (!huggingFaceToken.trim()) {
-      toast({
-        title: "Missing API Token",
-        description: "Please enter your Hugging Face API token to use the virtual try-on feature.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      console.log("Starting try-on process...");
-      
-      // Try using a working virtual try-on model from Hugging Face
-      const formData = new FormData();
-      formData.append('image', personImage);
-      formData.append('garment_image', garmentImage);
-
-      console.log("Sending request to Hugging Face Spaces API...");
-
-      // Use a different working virtual try-on space
-      const response = await fetch("https://levihsu-ootdiffusion.hf.space/api/predict", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${huggingFaceToken}`,
-        },
-        body: JSON.stringify({
-          data: [
-            await fileToBase64DataURL(personImage), // person image
-            await fileToBase64DataURL(garmentImage), // garment image
-            "A person wearing the garment", // description
-            true, // is_checked
-            true, // is_checked_crop
-            tryOnParams.denoisingSteps,
-            tryOnParams.seed
-          ]
-        }),
-      });
-
-      console.log("Response status:", response.status);
-
-      if (!response.ok) {
-        // Try a simpler approach with image blending if the main API fails
-        console.log("Primary API failed, trying alternative approach...");
-        
-        // Use a different approach - try the OOTDiffusion model
-        const altResponse = await fetch("https://api-inference.huggingface.co/models/levihsu/OOTDiffusion", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${huggingFaceToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            inputs: `A person wearing a fashionable garment`,
-            parameters: {
-              guidance_scale: 7.5,
-              num_inference_steps: tryOnParams.denoisingSteps,
-              seed: tryOnParams.seed
-            }
-          }),
-        });
-
-        if (!altResponse.ok) {
-          const errorText = await altResponse.text();
-          console.error("Alternative API also failed:", errorText);
-          throw new Error(`API request failed: ${altResponse.status} - Please check your API token and ensure you have access to the models.`);
-        }
-
-        const altResult = await altResponse.blob();
-        if (altResult.size === 0) {
-          throw new Error("Received empty response from API");
-        }
-        
-        const imageUrl = URL.createObjectURL(altResult);
-        setResultImage(imageUrl);
-      } else {
-        // Handle successful response from primary API
-        const result = await response.json();
-        console.log("API response:", result);
-        
-        if (result.data && result.data[0]) {
-          // The result should contain the generated image
-          const imageUrl = result.data[0];
-          setResultImage(imageUrl);
-        } else {
-          throw new Error("Unexpected response format from API");
-        }
-      }
-      
-      toast({
-        title: "Try-On Complete!",
-        description: "Your virtual try-on result is ready.",
-      });
-
-    } catch (error) {
-      console.error("Try-on failed:", error);
-      toast({
-        title: "Try-On Failed", 
-        description: error instanceof Error ? error.message : "The virtual try-on service is currently unavailable. This might be due to the model being offline or API limitations. Please try again later or check if your API token has the necessary permissions.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fileToBase64DataURL = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
   };
 
   return (
@@ -180,139 +48,29 @@ const TryOn = () => {
           </p>
         </div>
 
-        {/* API Token Input */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Hugging Face API Configuration
-            </CardTitle>
-            <CardDescription>
-              Enter your Hugging Face API token to use the virtual try-on feature. You can get one from{' '}
-              <a 
-                href="https://huggingface.co/settings/tokens" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                huggingface.co/settings/tokens
-              </a>
-              <br />
-              <span className="text-amber-600 font-medium">Note: Virtual try-on models may have limited availability and require specific API permissions.</span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Label htmlFor="hf-token">Hugging Face API Token</Label>
-              <Input
-                id="hf-token"
-                type="password"
-                value={huggingFaceToken}
-                onChange={(e) => setHuggingFaceToken(e.target.value)}
-                placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <ApiConfiguration
+          huggingFaceToken={huggingFaceToken}
+          onTokenChange={setHuggingFaceToken}
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Person Image Upload */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Your Photo
-              </CardTitle>
-              <CardDescription>
-                Upload a clear photo of yourself
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ImageUpload
-                onImageUpload={handlePersonImageUpload}
-                acceptedTypes="image/*"
-                placeholder="Upload your photo"
-                currentImage={personImage}
-              />
-            </CardContent>
-          </Card>
+        <TryOnUploadSection
+          personImage={personImage}
+          garmentImage={garmentImage}
+          tryOnParams={tryOnParams}
+          isLoading={isLoading}
+          huggingFaceToken={huggingFaceToken}
+          onPersonImageUpload={handlePersonImageUpload}
+          onGarmentImageUpload={handleGarmentImageUpload}
+          onParamsChange={setTryOnParams}
+          onTryOn={performTryOn}
+        />
 
-          {/* Garment Image Upload */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shirt className="h-5 w-5" />
-                Garment
-              </CardTitle>
-              <CardDescription>
-                Upload the garment you want to try on
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ImageUpload
-                onImageUpload={handleGarmentImageUpload}
-                acceptedTypes="image/*"
-                placeholder="Upload garment image"
-                currentImage={garmentImage}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Controls */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Try-On Settings</CardTitle>
-              <CardDescription>
-                Adjust the virtual try-on parameters
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TryOnControls
-                params={tryOnParams}
-                onChange={setTryOnParams}
-              />
-              <Button
-                onClick={performTryOn}
-                disabled={!personImage || !garmentImage || !huggingFaceToken.trim() || isLoading}
-                className="w-full mt-4"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  "Try On Garment"
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Result */}
         {resultImage && (
           <div className="mt-8">
             <TryOnResult
               resultImage={resultImage}
-              onDownload={() => {
-                const link = document.createElement('a');
-                link.href = resultImage;
-                link.download = 'virtual-tryon-result.png';
-                link.click();
-              }}
-              onReset={() => {
-                setResultImage(null);
-                setPersonImage(null);
-                setGarmentImage(null);
-                setTryOnParams({
-                  backgroundFile: null,
-                  garmentFile: null,
-                  denoisingSteps: 30,
-                  seed: 42,
-                  isChecked: true,
-                  isCheckedCrop: false,
-                });
-              }}
+              onDownload={handleDownload}
+              onReset={resetTryOn}
             />
           </div>
         )}
