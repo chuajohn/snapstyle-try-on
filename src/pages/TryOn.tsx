@@ -25,7 +25,7 @@ const TryOn = () => {
   const [tryOnParams, setTryOnParams] = useState<TryOnParams>({
     backgroundFile: null,
     garmentFile: null,
-    denoisingSteps: 20,
+    denoisingSteps: 30,
     seed: 42,
     isChecked: true,
     isCheckedCrop: false,
@@ -54,44 +54,89 @@ const TryOn = () => {
     setIsLoading(true);
     
     try {
-      // Convert images to base64 for API
-      const personImageBase64 = await fileToBase64(personImage);
-      const garmentImageBase64 = await fileToBase64(garmentImage);
+      console.log("Starting try-on process...");
+      
+      // Create FormData for the API request
+      const formData = new FormData();
+      
+      // Add the required parameters according to the API documentation
+      const requestData = {
+        background: personImage,
+        garment: garmentImage,
+        garment_des: "A fashionable garment", // Required string parameter
+        is_checked: tryOnParams.isChecked,
+        is_checked_crop: tryOnParams.isCheckedCrop,
+        denoise_steps: tryOnParams.denoisingSteps,
+        seed: tryOnParams.seed
+      };
+
+      // Append files and parameters to FormData
+      formData.append('background', requestData.background);
+      formData.append('garment', requestData.garment);
+      formData.append('garment_des', requestData.garment_des);
+      formData.append('is_checked', requestData.is_checked.toString());
+      formData.append('is_checked_crop', requestData.is_checked_crop.toString());
+      formData.append('denoise_steps', requestData.denoise_steps.toString());
+      formData.append('seed', requestData.seed.toString());
+
+      console.log("Sending request to Hugging Face API...");
 
       const response = await fetch("https://api-inference.huggingface.co/models/yisol/IDM-VTON", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inputs: {
-            background: personImageBase64,
-            garment: garmentImageBase64,
-            denoising_steps: tryOnParams.denoisingSteps,
-            seed: tryOnParams.seed,
-            is_checked: tryOnParams.isChecked,
-            is_checked_crop: tryOnParams.isCheckedCrop,
-          }
-        }),
+        body: formData,
       });
+
+      console.log("Response status:", response.status);
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+        const errorText = await response.text();
+        console.error("API Error:", errorText);
+        throw new Error(`API request failed: ${response.status} - ${errorText}`);
       }
 
-      const blob = await response.blob();
-      const imageUrl = URL.createObjectURL(blob);
-      setResultImage(imageUrl);
-      
-      toast({
-        title: "Try-On Complete!",
-        description: "Your virtual try-on result is ready.",
-      });
+      const contentType = response.headers.get('content-type');
+      console.log("Response content type:", contentType);
+
+      if (contentType && contentType.includes('application/json')) {
+        // If response is JSON, it might be an error or status message
+        const jsonResponse = await response.json();
+        console.log("JSON Response:", jsonResponse);
+        
+        if (jsonResponse.error) {
+          throw new Error(jsonResponse.error);
+        }
+        
+        // Handle case where model might be loading
+        if (jsonResponse.estimated_time) {
+          toast({
+            title: "Model Loading",
+            description: `The model is loading. Estimated time: ${jsonResponse.estimated_time} seconds. Please try again in a moment.`,
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        // Response should be an image
+        const blob = await response.blob();
+        console.log("Received image blob, size:", blob.size);
+        
+        if (blob.size === 0) {
+          throw new Error("Received empty response from API");
+        }
+        
+        const imageUrl = URL.createObjectURL(blob);
+        setResultImage(imageUrl);
+        
+        toast({
+          title: "Try-On Complete!",
+          description: "Your virtual try-on result is ready.",
+        });
+      }
     } catch (error) {
       console.error("Try-on failed:", error);
       toast({
         title: "Try-On Failed",
-        description: "Something went wrong. Please try again.",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -210,7 +255,7 @@ const TryOn = () => {
                 setTryOnParams({
                   backgroundFile: null,
                   garmentFile: null,
-                  denoisingSteps: 20,
+                  denoisingSteps: 30,
                   seed: 42,
                   isChecked: true,
                   isCheckedCrop: false,

@@ -31,7 +31,7 @@ export const TryOnControls = ({ params, onChange }: TryOnControlsProps) => {
           className="w-full"
         />
         <p className="text-xs text-gray-500">
-          Higher values provide better quality but take longer
+          Higher values provide better quality but take longer (recommended: 30)
         </p>
       </div>
 
