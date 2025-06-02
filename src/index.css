@@ -1,4 +1,4 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -98,4 +98,130 @@
   body {
     @apply bg-background text-foreground;
   }
+} */
+
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 215 14% 13%;
+    --foreground: 0 0% 95%;
+
+    --card: 214 14% 10%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 214 14% 10%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 0 0% 95%;
+    --primary-foreground: 214 14% 13%;
+
+    --secondary: 214 12% 20%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 214 12% 20%;
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 214 12% 20%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 214 12% 20%;
+    --input: 214 12% 20%;
+    --ring: 0 0% 90%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 214 14% 10%;
+    --sidebar-foreground: 240 5.3% 90%;
+    --sidebar-primary: 0 0% 95%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 240 4.8% 20%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 214 12% 25%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    --neon-accent: 90 78% 72%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  
+  .container {
+    @apply px-4 md:px-6 lg:px-8 max-w-[1400px] mx-auto;
+  }
+  
+  .product-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-[1.04];
+  }
+  
+  .btn-primary {
+    @apply bg-[#B3F17F] text-black px-6 py-3 font-medium hover:opacity-90 transition-opacity rounded-xl;
+  }
+  
+  .btn-outline {
+    @apply border border-[#B3F17F] text-[#B3F17F] px-6 py-3 font-medium hover:bg-[#B3F17F]/10 transition-colors rounded-xl;
+  }
+}
+
+/* Add animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out forwards;
+}
+
+/* Weekly outfit planner styles */
+.day-column {
+  @apply bg-secondary/50 p-4 rounded-xl;
+}
+
+.outfit-item-slot {
+  @apply bg-card/70 border border-border/40 rounded-lg p-2 h-[100px] flex items-center justify-center transition-all duration-300 hover:border-[#B3F17F]/50 hover:bg-card hover:shadow-md hover:shadow-[#B3F17F]/5;
+}
+
+.outfit-category {
+  @apply text-xs uppercase tracking-wider text-muted-foreground mb-2;
 }
