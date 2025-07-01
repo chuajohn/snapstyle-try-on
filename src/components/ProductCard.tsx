@@ -16,7 +16,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
   
   return (
-    <div className="group hover-scale bg-[#1D1F23]/70 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:shadow-[#B3F17F]/20 transition-all duration-300 transform hover:scale-[1.02]">
+    <div className="group hover-scale bg-[#1D1F23]/70 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:shadow-[#4ED3E0]/20 transition-all duration-300 transform hover:scale-[1.02]">
       <div className="aspect-[3/4] overflow-hidden bg-[#252830] relative">
         <img 
           src={product.image} 
@@ -33,19 +33,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="flex justify-between items-start mb-2">
           <div>
             <h3 className="font-medium text-base text-[#F2F2F2]">{product.name}</h3>
-            <p className="text-sm text-[#B3F17F] mt-1">${product.price.toFixed(2)}</p>
+            <p className="text-sm text-[#4ED3E0] mt-1">${product.price.toFixed(2)}</p>
           </div>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={handleAddToCart}
-            className="opacity-0 group-hover:opacity-100 transition-opacity rounded-xl border-[#B3F17F] text-[#B3F17F] hover:bg-[#B3F17F]/10"
+            className="opacity-0 group-hover:opacity-100 transition-opacity rounded-xl border-[#4ED3E0] text-[#4ED3E0] hover:bg-[#4ED3E0]/10"
           >
             Add
           </Button>
         </div>
         <div className="mt-2">
-          <span className="text-xs bg-[#2A2D36] text-[#B3F17F] px-2 py-1 rounded-full">
+          <span className="text-xs bg-[#2A2D36] text-[#4ED3E0] px-2 py-1 rounded-full">
             {product.category === 'tops' ? 'Essential' : 
              product.category === 'bottoms' ? 'Statement' : 
              product.category === 'outerwear' ? 'Seasonal' : 

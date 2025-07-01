@@ -10,8 +10,8 @@ const FeaturedProducts: React.FC = () => {
   return (
     <section className="container py-20 rounded-3xl my-12">
       <div className="flex justify-between items-baseline mb-10">
-        <h2 className="text-2xl md:text-3xl font-semibold text-[#B3F17F]">Trending Styles</h2>
-        <Link to="/shop" className="text-sm font-medium hover:underline group flex items-center text-[#B3F17F]">
+        <h2 className="text-2xl md:text-3xl font-semibold">Trending Styles</h2>
+        <Link to="/shop" className="text-sm font-medium hover:underline group flex items-center text-[#4ED3E0]">
           View All
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1 group-hover:translate-x-1 transition-transform">
             <path d="M5 12h14"></path>

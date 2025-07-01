@@ -33,7 +33,7 @@ const CartSidebar: React.FC = () => {
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <p className="text-lg mb-4">Your vault is empty</p>
-                <Button onClick={closeCart} variant="outline" className="rounded-xl border-[#B3F17F] text-[#B3F17F] hover:bg-[#B3F17F]/10 transition-all duration-300">
+                <Button onClick={closeCart} variant="outline" className="rounded-xl border-[#4ED3E0] text-[#4ED3E0] hover:bg-[#4ED3E0]/10 transition-all duration-300">
                   Browse Archive
                 </Button>
               </div>
@@ -55,7 +55,7 @@ const CartSidebar: React.FC = () => {
                 <span className="font-medium">${total.toFixed(2)}</span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">Shipping calculated at checkout</p>
-              <Button asChild className="w-full rounded-xl bg-[#B3F17F] text-black hover:bg-[#B3F17F]/90 transition-all duration-300" onClick={closeCart}>
+              <Button asChild className="w-full rounded-xl bg-[#4ED3E0] text-black hover:bg-[#4ED3E0]/90 transition-all duration-300" onClick={closeCart}>
                 <Link to="/checkout">
                   Secure Your Drops
                 </Link>

@@ -72,7 +72,7 @@ const WeeklyOutfitPlanner: React.FC = () => {
         {days.map(day => (
           <div key={day} className="day-column">
             <h3 className="text-lg font-medium mb-4 flex items-center">
-              <span className="w-2 h-2 bg-[#B3F17F] rounded-full mr-2"></span>
+              <span className="w-2 h-2 bg-[#4ED3E0] rounded-full mr-2"></span>
               {day}
             </h3>
             
@@ -85,7 +85,7 @@ const WeeklyOutfitPlanner: React.FC = () => {
       </div>
 
       <div className="text-center mt-8">
-        <button className="px-6 py-3 bg-[#B3F17F]/20 text-[#B3F17F] rounded-xl hover:bg-[#B3F17F]/30 transition-colors border border-[#B3F17F]/30">
+        <button className="px-6 py-3 bg-[#4ED3E0]/20 text-[#4ED3E0] rounded-xl hover:bg-[#4ED3E0]/30 transition-colors border border-[#4ED3E0]/30">
           Save Weekly Plan
         </button>
       </div>

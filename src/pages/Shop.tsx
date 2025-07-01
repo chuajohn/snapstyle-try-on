@@ -31,7 +31,7 @@ const Shop: React.FC = () => {
   return (
     <main className="container py-12 bg-[#1D1F23]/70 text-[#F2F2F2]">
       <header className="mb-12">
-        <h1 className="text-4xl font-bold mb-3 text-[#B3F17F]">Style Collections</h1>
+        <h1 className="text-4xl font-bold mb-3 text-[#4ED3E0]">Style Collections</h1>
         <p className="text-muted-foreground max-w-xl">Discover curated pieces that define your personal style. Each collection is thoughtfully assembled to inspire your next favorite outfit.</p>
       </header>
       
@@ -52,14 +52,14 @@ const Shop: React.FC = () => {
       ))}
       
       <section className="mt-20 py-16 px-8 bg-[#252830] rounded-2xl text-center">
-        <h2 className="text-3xl font-bold mb-4 text-[#B3F17F]">Snap Your Fit</h2>
+        <h2 className="text-3xl font-bold mb-4 text-[#4ED3E0]">Snap Your Fit</h2>
         <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
           Soon you'll be able to upload your outfit and get smart style suggestions instantly. 
           Perfect matches, every time.
         </p>
         <button 
-          className="px-8 py-4 bg-[#1D1F23] rounded-xl text-[#B3F17F]/70 cursor-not-allowed 
-                   flex items-center mx-auto space-x-2 hover:bg-[#252830] transition-colors border border-[#B3F17F]/30"
+          className="px-8 py-4 bg-[#1D1F23] rounded-xl text-[#4ED3E0]/70 cursor-not-allowed 
+                   flex items-center mx-auto space-x-2 hover:bg-[#252830] transition-colors border border-[#4ED3E0]/30"
           disabled
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">

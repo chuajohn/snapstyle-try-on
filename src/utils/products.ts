@@ -12,71 +12,71 @@ export interface Product {
 export const products: Product[] = [
   {
     id: 1,
-    name: "EVA-01 Technical Tee",
-    price: 89.99,
-    image: "https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    name: "Carhartt x Sacai Reversable Duck Jacket",
+    price: 1776.00,
+    image: "https://cdn-img.poizonapp.com/pro-img/cut-img/20240220/23f2209750d348e0abc368a5ad6ff456.jpg?x-oss-process=image/format,webp/resize,w_800,h_800",
     category: "tops",
-    description: "Limited edition graphic tee inspired by Evangelion Unit-01 color scheme with technical details.",
+    description: "A hybrid of Carhartt WIP's OG Chore Coat and Siberian Parka.",
     featured: true
   },
   {
     id: 2,
-    name: "Neo-Tokyo Cargo Pants",
-    price: 159.99,
-    image: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    name: "GU Pleated Wide-Leg Pants",
+    price: 39.90,
+    image: "https://image.uniqlo.com/GU/ST3/WesternCommon/imagesgoods/351357/sub/goods_351357_sub52_3x4.jpg?width=600",
     category: "bottoms",
-    description: "Cyberpunk-inspired tactical cargos with multiple utility pockets and reflective detailing.",
+    description: "A pair of wide-leg pants, made from a two-way stretch fabric with wrinkle-resistant properties for easy care.",
     featured: true
   },
   {
     id: 3,
-    name: "Akira Capsule Jacket",
-    price: 329.99,
-    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    name: "Michael Kors Biker Jacket",
+    price: 663.00,
+    image: "https://cdn.luxe.digital/media/20230522141942/best-leather-jackets-men-michael-kors-luxe-digital-1.jpg.webp",
     category: "outerwear",
-    description: "Premium outerwear inspired by Neo-Tokyo with iconic red detailing and pill-shaped embroidery.",
+    description: "Black lamb skin mock-neck biker jacket from Michael Kors featuring stitched panels, a mock neck, long sleeves, front zipped pockets, a two way zip fastening and a monogram printed lining.",
     featured: true
   },
   {
     id: 4,
     name: "Margiela Replica Low",
     price: 449.99,
-    image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    image: "https://www.maisonmargiela.com/dw/image/v2/AAPK_PRD/on/demandware.static/-/Sites-margiela-master-catalog/default/dw08f4d837/images/large/S57WS0236_P1897_900_F.jpg?sw=1024&q=80",
     category: "shoes",
     description: "Classic luxury low-top sneakers in premium black leather with signature stitching.",
     featured: true
   },
   {
     id: 5,
-    name: "Fragment Design Work Shirt",
-    price: 189.99,
-    image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    name: "Uniqlo U AIRism Cotton Oversized Crew Neck Half Sleeve T-Shirt",
+    price: 24.90,
+    image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/455359/item/goods_67_455359_3x4.jpg?width=494",
     category: "tops",
-    description: "Collaborative piece featuring minimalist detailing and lightning bolt motifs on premium cotton."
+    description: "By international designers based at our Paris Research and Development Center led by Artistic Director Christophe Lemaire."
   },
   {
     id: 6,
-    name: "Godspeed Evangelion Trousers",
+    name: "Pleasures x Evangelion EVA-1 Cargo Pants Black",
     price: 219.99,
-    image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    image: "https://cdna.lystit.com/1040/1300/n/photos/endclothing/793e12fb/pleasures-designer-Black-Eva-1-Cargo-Pants.jpeg",
     category: "bottoms",
-    description: "Water-resistant high-function trousers with articulated knees and hidden pocket system."
-  },
-  {
-    id: 7,
-    name: "Mecha-Inspired Knit",
-    price: 279.99,
-    image: "https://images.unsplash.com/photo-1616150638538-ffb0679a3fc4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
-    category: "tops",
-    description: "Premium wool blend sweater with robot-inspired panel design and metallic thread details."
+    description: "Features eye-catching reflective graphics straight from the anime series. Made with durable black nylon."
   },
   {
     id: 8,
-    name: "Tactical Utility Holster",
-    price: 189.99,
-    image: "https://images.unsplash.com/photo-1507464098880-e367bc5d2c08?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
-    category: "accessories",
-    description: "Modular chest rig inspired by cyberpunk aesthetics, perfect for daily essentials."
+    name: "Aurélien Light Blue Suede Yacht Loafer",
+    price: 410.00,
+    image: "https://aurelien-online.com/cdn/shop/products/Aurelien_Yacht_Loafers_men_suede_shoes_summer_italy_lightblue3.jpg?v=1634573482&width=1200",
+    category: "shoes",
+    description: "Designed for sunny strolls, hence the unlined construction ensuring ultimate comfort, breathability and flexibility."
+  },
+  {
+      id: 7,
+      name: "Hajime Sorayama & Knit Gang Council Craft “Sexy Robot” Knit Sweater",
+      price: 424.99,
+      image: "https://image-cdn.hypb.st/https%3A%2F%2Fhypebeast.com%2Fimage%2F2020%2F03%2Fknit-gang-council-hajime-sorayama-sexy-robot-crewneck-sweater-release-1.jpg?q=70&w=915&cbr=1&fit=max",
+      category: "tops",
+      description: "Semi-boxy fit, complemented by a fine woolen texture"
   }
 ];
 
