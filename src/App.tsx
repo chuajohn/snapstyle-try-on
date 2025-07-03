@@ -10,6 +10,9 @@ import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import TryOn from "./pages/TryOn";
 import Dashboard from "./pages/Dashboard";
+import FAQ from "./pages/FAQ";
+import Blog from "./pages/Blog";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import CartSidebar from "./components/CartSidebar";
@@ -33,6 +36,9 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/try-on" element={<TryOn />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/about" element={<About />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
