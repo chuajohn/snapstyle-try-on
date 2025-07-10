@@ -360,6 +360,12 @@ const TryOn = () => {
     isCheckedCrop: false,
   });
 
+<<<<<<< HEAD
+  // Hardcoded Hugging Face token
+  const huggingFaceToken = "hf_your_hardcoded_token_here";
+
+=======
+>>>>>>> parent of 96cda6a (site update)
   const handlePersonImageUpload = (file: File) => {
     setPersonImage(file);
     setTryOnParams(prev => ({ ...prev, backgroundFile: file }));
